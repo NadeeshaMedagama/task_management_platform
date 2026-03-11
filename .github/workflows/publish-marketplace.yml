@@ -1,0 +1,113 @@
+# ============================================================================
+# Publish to GitHub Marketplace
+# ============================================================================
+# Validates the action.yml and creates a release suitable for
+# GitHub Marketplace publishing.
+# ============================================================================
+
+name: Publish to GitHub Marketplace
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag for marketplace (e.g., v1.0.0)"
+        required: true
+        type: string
+      dry-run:
+        description: "Dry run (validate only, do not publish)"
+        required: false
+        default: true
+        type: boolean
+
+jobs:
+  validate:
+    name: Validate action.yml
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate action.yml exists
+        run: |
+          if [ ! -f action.yml ]; then
+            echo "❌ action.yml not found in repository root"
+            exit 1
+          fi
+          echo "✅ action.yml found"
+
+      - name: Validate action.yml structure
+        run: |
+          echo "🔍 Checking action.yml..."
+          # Check required top-level keys
+          for key in name description inputs runs; do
+            if ! grep -q "^${key}:" action.yml; then
+              echo "❌ Missing required key: ${key}"
+              exit 1
+            fi
+          done
+          # Check branding for marketplace
+          if ! grep -q "^branding:" action.yml; then
+            echo "⚠️  Missing branding section (recommended for Marketplace)"
+          fi
+          echo "✅ action.yml is valid"
+
+      - name: Validate Docker Compose
+        run: docker compose config --quiet && echo "✅ docker-compose.yml is valid"
+
+  publish:
+    name: Publish to Marketplace
+    runs-on: ubuntu-latest
+    needs: validate
+    if: >
+      (github.event_name == 'release') ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.dry-run == 'false')
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Determine version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" == "release" ]; then
+            echo "tag=${{ github.event.release.tag_name }}" >> $GITHUB_OUTPUT
+          else
+            echo "tag=${{ github.event.inputs.tag }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create marketplace release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: "Task Management Platform ${{ steps.version.outputs.tag }}"
+          body: |
+            ## 🚀 Task Management Platform ${{ steps.version.outputs.tag }}
+
+            ### Usage
+
+            ```yaml
+            - name: Deploy Task Management Platform
+              uses: ${{ github.repository }}@${{ steps.version.outputs.tag }}
+              with:
+                database-password: ${{ '{{' }} secrets.DB_PASSWORD {{ '}}' }}
+                jwt-secret: ${{ '{{' }} secrets.JWT_SECRET {{ '}}' }}
+            ```
+
+            See [README](https://github.com/${{ github.repository }}) for full documentation.
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Summary
+        run: |
+          echo "## ✅ Published to GitHub Marketplace" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** ${{ steps.version.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Repository:** ${{ github.repository }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Visit the [GitHub Marketplace](https://github.com/marketplace) to verify the listing." >> $GITHUB_STEP_SUMMARY
+
