@@ -1,0 +1,107 @@
+# ============================================================================
+# Dependabot Configuration
+# ============================================================================
+# Automatically creates PRs for dependency updates in Maven (backend),
+# npm (frontend), GitHub Actions, and Docker.
+# ============================================================================
+
+version: 2
+
+updates:
+  # ── Maven (Backend) ──────────────────────────────────────────────────────
+  - package-ecosystem: "maven"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "nadeesha_medagama"
+    labels:
+      - "dependencies"
+      - "backend"
+      - "java"
+    commit-message:
+      prefix: "deps(backend):"
+    groups:
+      spring-boot:
+        patterns:
+          - "org.springframework.boot*"
+          - "org.springframework.security*"
+      jwt:
+        patterns:
+          - "io.jsonwebtoken*"
+
+  # ── npm (Frontend) ───────────────────────────────────────────────────────
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "nadeesha_medagama"
+    labels:
+      - "dependencies"
+      - "frontend"
+      - "javascript"
+    commit-message:
+      prefix: "deps(frontend):"
+    groups:
+      next-js:
+        patterns:
+          - "next*"
+          - "eslint-config-next"
+      react:
+        patterns:
+          - "react*"
+          - "@types/react*"
+
+  # ── GitHub Actions ───────────────────────────────────────────────────────
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "ci:"
+
+  # ── Docker ───────────────────────────────────────────────────────────────
+  - package-ecosystem: "docker"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "UTC"
+    labels:
+      - "dependencies"
+      - "docker"
+      - "backend"
+    commit-message:
+      prefix: "docker(backend):"
+
+  - package-ecosystem: "docker"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "UTC"
+    labels:
+      - "dependencies"
+      - "docker"
+      - "frontend"
+    commit-message:
+      prefix: "docker(frontend):"
+
