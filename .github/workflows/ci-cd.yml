@@ -93,7 +93,7 @@ jobs:
         run: mvn package -DskipTests -B
 
       - name: Upload backend artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: backend-jar
           path: backend/target/*.jar
@@ -130,7 +130,7 @@ jobs:
           NEXT_PUBLIC_API_URL: http://localhost:8080/api
 
       - name: Upload frontend artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: frontend-build
           path: frontend/.next
