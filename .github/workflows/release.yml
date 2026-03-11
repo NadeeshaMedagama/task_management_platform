@@ -1,0 +1,95 @@
+# ============================================================================
+# Release
+# ============================================================================
+# Creates a GitHub Release with auto-generated release notes, builds
+# production artifacts, and attaches them to the release.
+# ============================================================================
+
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version (e.g., v1.0.0)"
+        required: true
+        type: string
+      prerelease:
+        description: "Mark as pre-release"
+        required: false
+        default: false
+        type: boolean
+
+env:
+  JAVA_VERSION: "21"
+  NODE_VERSION: "20"
+
+jobs:
+  # ── Build Release Artifacts ───────────────────────────────────────────────
+  build:
+    name: Build Release Artifacts
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" == "push" ]; then
+            echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          else
+            echo "tag=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          fi
+
+      # ── Backend ──
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: temurin
+          cache: maven
+
+      - name: Build backend JAR
+        working-directory: backend
+        run: mvn clean package -DskipTests -B
+
+      # ── Frontend ──
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Build frontend
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:8080/api
+
+      - name: Archive frontend build
+        run: tar -czf frontend-build-${{ steps.version.outputs.tag }}.tar.gz -C frontend .next public
+
+      # ── Create Release ──
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: "Release ${{ steps.version.outputs.tag }}"
+          generate_release_notes: true
+          prerelease: ${{ github.event.inputs.prerelease || false }}
+          files: |
+            backend/target/task-management-backend-*.jar
+            frontend-build-${{ steps.version.outputs.tag }}.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
