@@ -1,0 +1,108 @@
+# ============================================================================
+# Task Management Platform — GitHub Marketplace Action
+# ============================================================================
+# Composite action that deploys the Task Management Platform stack.
+# Can be published to the GitHub Marketplace for reuse.
+# ============================================================================
+
+name: "Task Management Platform Deploy"
+description: "Deploy the Task Management Platform (Spring Boot + Next.js + PostgreSQL) using Docker Compose"
+author: "nadeesha_medagama"
+
+branding:
+  icon: "check-square"
+  color: "blue"
+
+inputs:
+  database-url:
+    description: "PostgreSQL JDBC connection URL"
+    required: false
+    default: "jdbc:postgresql://db:5432/taskmanager"
+  database-username:
+    description: "PostgreSQL username"
+    required: false
+    default: "taskuser"
+  database-password:
+    description: "PostgreSQL password"
+    required: true
+  jwt-secret:
+    description: "JWT signing secret (min 64 hex chars)"
+    required: true
+  jwt-expiration:
+    description: "JWT token expiration in milliseconds"
+    required: false
+    default: "86400000"
+  api-url:
+    description: "Public API URL for the frontend"
+    required: false
+    default: "http://localhost:8080/api"
+  backend-port:
+    description: "Port to expose the backend on"
+    required: false
+    default: "8080"
+  frontend-port:
+    description: "Port to expose the frontend on"
+    required: false
+    default: "3000"
+
+outputs:
+  backend-url:
+    description: "URL of the running backend"
+    value: ${{ steps.deploy.outputs.backend-url }}
+  frontend-url:
+    description: "URL of the running frontend"
+    value: ${{ steps.deploy.outputs.frontend-url }}
+  swagger-url:
+    description: "URL of the Swagger UI"
+    value: ${{ steps.deploy.outputs.swagger-url }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Validate inputs
+      shell: bash
+      run: |
+        echo "🔍 Validating inputs..."
+        if [ -z "${{ inputs.jwt-secret }}" ]; then
+          echo "❌ jwt-secret is required"
+          exit 1
+        fi
+        if [ -z "${{ inputs.database-password }}" ]; then
+          echo "❌ database-password is required"
+          exit 1
+        fi
+        echo "✅ All inputs valid"
+
+    - name: Set up environment
+      shell: bash
+      run: |
+        cat > .env <<EOF
+        SPRING_DATASOURCE_URL=${{ inputs.database-url }}
+        SPRING_DATASOURCE_USERNAME=${{ inputs.database-username }}
+        SPRING_DATASOURCE_PASSWORD=${{ inputs.database-password }}
+        JWT_SECRET=${{ inputs.jwt-secret }}
+        JWT_EXPIRATION=${{ inputs.jwt-expiration }}
+        NEXT_PUBLIC_API_URL=${{ inputs.api-url }}
+        EOF
+        echo "✅ Environment file created"
+
+    - name: Deploy with Docker Compose
+      id: deploy
+      shell: bash
+      run: |
+        echo "🚀 Starting Task Management Platform..."
+        docker compose up -d --build
+        echo ""
+        echo "⏳ Waiting for services to become healthy..."
+        sleep 15
+        docker compose ps
+        echo ""
+        echo "backend-url=http://localhost:${{ inputs.backend-port }}/api" >> $GITHUB_OUTPUT
+        echo "frontend-url=http://localhost:${{ inputs.frontend-port }}" >> $GITHUB_OUTPUT
+        echo "swagger-url=http://localhost:${{ inputs.backend-port }}/api/swagger-ui.html" >> $GITHUB_OUTPUT
+        echo ""
+        echo "✅ Task Management Platform is running!"
+        echo "   Frontend:  http://localhost:${{ inputs.frontend-port }}"
+        echo "   Backend:   http://localhost:${{ inputs.backend-port }}/api"
+        echo "   Swagger:   http://localhost:${{ inputs.backend-port }}/api/swagger-ui.html"
+
