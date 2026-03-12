@@ -86,8 +86,10 @@ jobs:
         run: mvn test -B
         env:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/taskmanager_test
+          SPRING_DATASOURCE_DRIVER: org.postgresql.Driver
           SPRING_DATASOURCE_USERNAME: testuser
           SPRING_DATASOURCE_PASSWORD: testpassword
+          SPRING_JPA_DIALECT: org.hibernate.dialect.PostgreSQLDialect
 
       - name: Package JAR
         run: mvn package -DskipTests -B
