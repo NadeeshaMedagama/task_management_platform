@@ -8,8 +8,8 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_DB: taskmanager
-      POSTGRES_USER: ${SPRING_DATASOURCE_USERNAME:?database username is required}
-      POSTGRES_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:?database password is required}
+      POSTGRES_USER: ${SPRING_DATASOURCE_USERNAME:-taskuser}
+      POSTGRES_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:-taskpassword}
     ports:
       - "5432:5432"
     volumes:
@@ -17,7 +17,7 @@ services:
     networks:
       - task-net
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${SPRING_DATASOURCE_USERNAME} -d taskmanager"]
+      test: ["CMD-SHELL", "pg_isready -U taskuser -d taskmanager"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -34,9 +34,9 @@ services:
         condition: service_healthy
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/taskmanager
-      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME:?database username is required}
-      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:?database password is required}
-      JWT_SECRET: ${JWT_SECRET:?jwt secret is required}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME:-taskuser}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:-taskpassword}
+      JWT_SECRET: ${JWT_SECRET:-ZGV2LW9ubHktcGxhY2Vob2xkZXIta2V5LWNoYW5nZS1tZS1pbi1wcm9kdWN0aW9uIQ==}
       JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
     ports:
