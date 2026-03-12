@@ -1,11 +1,5 @@
 # Task Management Platform
 
-[![CI/CD Pipeline](https://github.com/<OWNER>/<REPO>/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/<OWNER>/<REPO>/actions/workflows/ci-cd.yml)
-[![CodeQL](https://github.com/<OWNER>/<REPO>/actions/workflows/codeql.yml/badge.svg)](https://github.com/<OWNER>/<REPO>/actions/workflows/codeql.yml)
-[![Release](https://github.com/<OWNER>/<REPO>/actions/workflows/release.yml/badge.svg)](https://github.com/<OWNER>/<REPO>/actions/workflows/release.yml)
-[![Publish Packages](https://github.com/<OWNER>/<REPO>/actions/workflows/publish-packages.yml/badge.svg)](https://github.com/<OWNER>/<REPO>/actions/workflows/publish-packages.yml)
-[![Dependency Updates](https://github.com/<OWNER>/<REPO>/actions/workflows/dependency-updates.yml/badge.svg)](https://github.com/<OWNER>/<REPO>/actions/workflows/dependency-updates.yml)
-
 ## Overview
 A full-stack **Mini Task Management System** built with:
 - **Backend**: Spring Boot 3.2, Java 21, PostgreSQL, JWT Security
