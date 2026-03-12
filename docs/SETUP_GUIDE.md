@@ -122,7 +122,7 @@ Set the required environment variables:
 export SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/taskmanager
 export SPRING_DATASOURCE_USERNAME=taskuser
 export SPRING_DATASOURCE_PASSWORD=<your-database-password>
-export JWT_SECRET=$(openssl rand -hex 32)
+export JWT_SECRET=$(openssl rand -base64 32)
 export JWT_EXPIRATION=86400000
 ```
 
@@ -190,9 +190,27 @@ curl -X POST http://localhost:8080/api/auth/register \
 
 After logging in, use the **Create Task** button on the tasks page to add a new task with a title, description, status, priority, and optional due date.
 
-### 3. Promote a User to Admin (Optional)
+### 3. Log In as Admin
 
-New registrations default to the `USER` role. To grant admin privileges, update the database directly:
+A default admin account is **seeded automatically** on first startup if no admin user exists:
+
+| Field      | Default Value            |
+|------------|--------------------------|
+| Username   | `admin`                  |
+| Password   | `admin123`               |
+| Email      | `admin@taskmanager.com`  |
+
+> ⚠️ **Change the default admin password immediately** after first login in any non-local environment.
+
+You can customize the seeded admin credentials with environment variables **before** first startup:
+
+```bash
+export ADMIN_USERNAME=myadmin
+export ADMIN_EMAIL=myadmin@company.com
+export ADMIN_PASSWORD=strong_password_here
+```
+
+Alternatively, you can promote any existing user to admin via SQL:
 
 ```sql
 UPDATE users SET role = 'ADMIN' WHERE username = 'johndoe';
@@ -208,12 +226,15 @@ Log out and log back in for the role change to take effect. Admins can see and m
 |------------------------------|----------------------------------------------------------------------|------------------------------------|
 | `SPRING_DATASOURCE_URL`     | `jdbc:postgresql://localhost:5432/taskmanager`                       | PostgreSQL JDBC connection URL     |
 | `SPRING_DATASOURCE_USERNAME`| `taskuser`                                                           | Database username                  |
-| `SPRING_DATASOURCE_PASSWORD`| `taskpassword`                                                       | Database password                  |
-| `JWT_SECRET`                | `404E635266...` (64-char hex)                                        | HMAC-SHA256 signing key for JWTs   |
+| `SPRING_DATASOURCE_PASSWORD`| —                                                                    | Database password                  |
+| `JWT_SECRET`                | Dev-only placeholder (override in prod)                              | Base64-encoded HMAC-SHA256 signing key for JWTs. Generate with `openssl rand -base64 32` |
 | `JWT_EXPIRATION`            | `86400000` (24 hours in ms)                                          | JWT token lifetime in milliseconds |
 | `NEXT_PUBLIC_API_URL`       | `http://localhost:8080/api`                                          | Backend API URL used by the frontend |
+| `ADMIN_USERNAME`            | `admin`                                                              | Username for the auto-seeded admin account |
+| `ADMIN_EMAIL`               | `admin@taskmanager.com`                                              | Email for the auto-seeded admin account |
+| `ADMIN_PASSWORD`            | `admin123`                                                           | Password for the auto-seeded admin account |
 
-> ⚠️ **Important:** Change `JWT_SECRET` and `SPRING_DATASOURCE_PASSWORD` to strong, unique values for any non-local environment.
+> ⚠️ **Important:** Change `JWT_SECRET`, `SPRING_DATASOURCE_PASSWORD`, and `ADMIN_PASSWORD` to strong, unique values for any non-local environment.
 
 ---
 
