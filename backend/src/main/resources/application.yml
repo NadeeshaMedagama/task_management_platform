@@ -29,7 +29,8 @@ spring:
     default-property-inclusion: non_null
 
 jwt:
-  secret: ${JWT_SECRET}
+  # Default is a dev-only key — override via JWT_SECRET env var in production
+  secret: ${JWT_SECRET:ZGV2LW9ubHktcGxhY2Vob2xkZXIta2V5LWNoYW5nZS1tZS1pbi1wcm9kdWN0aW9uIQ==}
   expiration: ${JWT_EXPIRATION:86400000}
 
 springdoc:
