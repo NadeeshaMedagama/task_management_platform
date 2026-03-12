@@ -415,13 +415,26 @@ spring:
 
 ---
 
-## Creating an Admin User
+## Default Admin Account
 
-New registrations default to `USER` role. To create an ADMIN, register normally then update in the database:
+A default admin account is **seeded automatically** on first startup:
 
-```sql
-UPDATE users SET role = 'ADMIN' WHERE username = 'your_username';
+| Field    | Default Value           |
+|----------|-------------------------|
+| Username | `admin`                 |
+| Password | `admin123`              |
+| Email    | `admin@taskmanager.com` |
+
+> ⚠️ **Change the default admin password immediately** in any non-local environment.
+
+You can customize the admin credentials via environment variables before first startup:
+```bash
+export ADMIN_USERNAME=myadmin
+export ADMIN_EMAIL=myadmin@company.com
+export ADMIN_PASSWORD=strong_password_here
 ```
+
+If a user named `admin` already exists with the `USER` role, it will be automatically promoted to `ADMIN` on the next startup.
 
 ---
 
