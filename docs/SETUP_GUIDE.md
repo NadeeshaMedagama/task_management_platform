@@ -194,11 +194,11 @@ After logging in, use the **Create Task** button on the tasks page to add a new 
 
 A default admin account is **seeded automatically** on first startup if no admin user exists:
 
-| Field      | Default Value            |
-|------------|--------------------------|
-| Username   | `admin`                  |
-| Password   | `admin123`               |
-| Email      | `admin@taskmanager.com`  |
+| Field      | Default Value |
+|------------|---------|
+| Username   | `admin` |
+| Password   | `admin123` |
+| Email      | `admin` |
 
 > ⚠️ **Change the default admin password immediately** after first login in any non-local environment.
 
