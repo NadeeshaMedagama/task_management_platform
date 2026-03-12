@@ -23,6 +23,10 @@ on:
         default: false
         type: boolean
 
+permissions:
+  contents: write
+  pull-requests: read
+
 env:
   JAVA_VERSION: "21"
   NODE_VERSION: "20"
@@ -79,6 +83,14 @@ jobs:
       - name: Archive frontend build
         run: tar -czf frontend-build-${{ steps.version.outputs.tag }}.tar.gz -C frontend .next public
 
+      - name: Create tag (workflow_dispatch only)
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -f "${{ steps.version.outputs.tag }}"
+          git push origin "${{ steps.version.outputs.tag }}" --force
+
       # ── Create Release ──
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -87,9 +99,9 @@ jobs:
           name: "Release ${{ steps.version.outputs.tag }}"
           generate_release_notes: true
           prerelease: ${{ github.event.inputs.prerelease || false }}
+          make_latest: true
+          token: ${{ github.token }}
           files: |
             backend/target/task-management-backend-*.jar
             frontend-build-${{ steps.version.outputs.tag }}.tar.gz
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
