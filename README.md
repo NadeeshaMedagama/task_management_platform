@@ -371,8 +371,8 @@ cd backend
 # Configure environment (or set variables in application.yml)
 export SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/taskmanager
 export SPRING_DATASOURCE_USERNAME=taskuser
-export SPRING_DATASOURCE_PASSWORD=taskpassword
-export JWT_SECRET=404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+export SPRING_DATASOURCE_PASSWORD=<your-database-password>
+export JWT_SECRET=$(openssl rand -hex 32)
 
 # Build and run
 mvn clean install -DskipTests
