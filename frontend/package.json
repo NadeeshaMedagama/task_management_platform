@@ -14,7 +14,7 @@
     "react-dom": "^18",
     "axios": "^1.6.7",
     "react-hot-toast": "^2.4.1",
-    "lucide-react": "^0.344.0",
+    "lucide-react": "^0.577.0",
     "date-fns": "^3.3.1",
     "@headlessui/react": "^1.7.18"
   },
