@@ -16,7 +16,7 @@
     "react-hot-toast": "^2.4.1",
     "lucide-react": "^0.577.0",
     "date-fns": "^4.1.0",
-    "@headlessui/react": "^1.7.18"
+    "@headlessui/react": "^2.2.9"
   },
   "devDependencies": {
     "typescript": "^5",
