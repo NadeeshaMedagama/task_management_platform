@@ -1,5 +1,5 @@
 # ---- Build Stage ----
-FROM node:20-alpine AS builder
+FROM node:25-alpine AS builder
 
 WORKDIR /app
 COPY package*.json ./
@@ -10,7 +10,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 
 # ---- Runtime Stage ----
-FROM node:20-alpine AS runner
+FROM node:25-alpine AS runner
 
 WORKDIR /app
 ENV NODE_ENV=production
