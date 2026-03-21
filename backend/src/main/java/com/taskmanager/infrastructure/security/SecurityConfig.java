@@ -21,6 +21,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.lang.reflect.Method;
 import java.util.List;
 
 @Configuration
@@ -73,10 +74,38 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(userDetailsService);
-        authProvider.setPasswordEncoder(passwordEncoder());
+        DaoAuthenticationProvider authProvider = createDaoAuthenticationProvider();
+        invokeIfPresent(authProvider, "setPasswordEncoder", PasswordEncoder.class, passwordEncoder());
         return authProvider;
+    }
+
+    private DaoAuthenticationProvider createDaoAuthenticationProvider() {
+        try {
+            return DaoAuthenticationProvider.class
+                    .getConstructor(UserDetailsService.class)
+                    .newInstance(userDetailsService);
+        } catch (NoSuchMethodException ignored) {
+            try {
+                DaoAuthenticationProvider provider = DaoAuthenticationProvider.class.getConstructor().newInstance();
+                invokeIfPresent(provider, "setUserDetailsService", UserDetailsService.class, userDetailsService);
+                return provider;
+            } catch (Exception ex) {
+                throw new IllegalStateException("Failed to initialize DaoAuthenticationProvider", ex);
+            }
+        } catch (Exception ex) {
+            throw new IllegalStateException("Failed to initialize DaoAuthenticationProvider", ex);
+        }
+    }
+
+    private static <T> void invokeIfPresent(Object target, String methodName, Class<T> argType, T arg) {
+        try {
+            Method method = target.getClass().getMethod(methodName, argType);
+            method.invoke(target, arg);
+        } catch (NoSuchMethodException ignored) {
+            // Method not available in this Spring Security version.
+        } catch (Exception ex) {
+            throw new IllegalStateException("Failed to configure authentication provider", ex);
+        }
     }
 
     @Bean
