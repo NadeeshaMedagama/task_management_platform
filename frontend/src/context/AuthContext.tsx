@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import { AuthUser } from '@/types';
 import { saveAuth, getAuthUser, clearAuth } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
@@ -16,17 +16,10 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState<AuthUser | null>(() => getAuthUser());
+  const [isLoading] = useState(false);
   const router = useRouter();
 
-  useEffect(() => {
-    const authUser = getAuthUser();
-    if (authUser) {
-      setUser(authUser);
-    }
-    setIsLoading(false);
-  }, []);
 
   const login = (authUser: AuthUser) => {
     saveAuth(authUser);
