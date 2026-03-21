@@ -26,9 +26,9 @@ on:
     # Run every Monday at 06:00 UTC
     - cron: "0 6 * * 1"
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+# concurrency:
+#   group: ${{ github.workflow }}-${{ github.ref }}
+#   cancel-in-progress: true
 
 env:
   JAVA_VERSION: "21"
