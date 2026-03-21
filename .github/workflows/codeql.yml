@@ -17,9 +17,9 @@ on:
     # Run every Wednesday at 04:00 UTC
     - cron: "0 4 * * 3"
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+# concurrency:
+#   group: ${{ github.workflow }}-${{ github.ref }}
+#   cancel-in-progress: true
 
 jobs:
   # ── CodeQL Analysis — Java (Backend) ──────────────────────────────────────
