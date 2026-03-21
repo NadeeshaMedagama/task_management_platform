@@ -45,21 +45,6 @@ jobs:
       run:
         working-directory: backend
 
-    services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_DB: taskmanager_test
-          POSTGRES_USER: testuser
-          POSTGRES_PASSWORD: testpassword
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U testuser -d taskmanager_test"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -83,13 +68,15 @@ jobs:
         run: mvn clean compile -B
 
       - name: Run unit tests
-        run: mvn test -B
-        env:
-          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/taskmanager_test
-          SPRING_DATASOURCE_DRIVER: org.postgresql.Driver
-          SPRING_DATASOURCE_USERNAME: testuser
-          SPRING_DATASOURCE_PASSWORD: testpassword
-          SPRING_JPA_DIALECT: org.hibernate.dialect.PostgreSQLDialect
+        run: mvn test -B -Dspring.profiles.active=test
+
+      - name: Upload surefire reports on failure
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: backend-surefire-reports
+          path: backend/target/surefire-reports/**
+          retention-days: 7
 
       - name: Package JAR
         run: mvn package -DskipTests -B
