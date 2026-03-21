@@ -69,6 +69,12 @@ jobs:
 
       - name: Run unit tests
         run: mvn test -B -Dspring.profiles.active=test
+        env:
+          SPRING_DATASOURCE_URL: jdbc:h2:mem:testdb
+          SPRING_DATASOURCE_DRIVER: org.h2.Driver
+          SPRING_DATASOURCE_USERNAME: sa
+          SPRING_DATASOURCE_PASSWORD: ""
+          SPRING_JPA_DIALECT: org.hibernate.dialect.H2Dialect
 
       - name: Upload surefire reports on failure
         if: failure()
