@@ -9,7 +9,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import java.lang.reflect.Method;
 import java.security.Key;
+import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -63,15 +65,66 @@ public class JwtUtil {
     }
 
     private Claims extractAllClaims(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+        try {
+            Object parserOrBuilder = invokeStaticNoArgs(Jwts.class, "parserBuilder", "parser");
+
+            // Configure key using whichever method is available in the resolved JJWT version.
+            if (hasMethod(parserOrBuilder, "setSigningKey", Key.class)) {
+                parserOrBuilder = invoke(parserOrBuilder, "setSigningKey", new Class<?>[]{Key.class}, getSigningKey());
+            } else if (hasMethod(parserOrBuilder, "verifyWith", SecretKey.class)) {
+                parserOrBuilder = invoke(parserOrBuilder, "verifyWith", new Class<?>[]{SecretKey.class}, getSigningKey());
+            }
+
+            Object parser = hasMethod(parserOrBuilder, "build")
+                    ? invokeNoArgs(parserOrBuilder, "build")
+                    : parserOrBuilder;
+
+            if (hasMethod(parser, "parseClaimsJws", String.class)) {
+                Object jws = invoke(parser, "parseClaimsJws", new Class<?>[]{String.class}, token);
+                return (Claims) invokeNoArgs(jws, "getBody");
+            }
+
+            Object jws = invoke(parser, "parseSignedClaims", new Class<?>[]{String.class}, token);
+            return (Claims) invokeNoArgs(jws, "getPayload");
+        } catch (Exception ex) {
+            log.error("Failed to parse JWT claims", ex);
+            throw new JwtException("Invalid JWT token", ex);
+        }
     }
 
-    private Key getSigningKey() {
+    private SecretKey getSigningKey() {
         byte[] keyBytes = Decoders.BASE64.decode(jwtSecret);
         return Keys.hmacShaKeyFor(keyBytes);
+    }
+
+    private static Object invokeStaticNoArgs(Class<?> type, String... methodCandidates) throws Exception {
+        for (String methodName : methodCandidates) {
+            try {
+                Method method = type.getMethod(methodName);
+                return method.invoke(null);
+            } catch (NoSuchMethodException ignored) {
+                // Try next candidate.
+            }
+        }
+        throw new NoSuchMethodException("No parser factory method found on " + type.getName());
+    }
+
+    private static Object invokeNoArgs(Object target, String methodName) throws Exception {
+        Method method = target.getClass().getMethod(methodName);
+        return method.invoke(target);
+    }
+
+    private static Object invoke(Object target, String methodName, Class<?>[] parameterTypes, Object argument) throws Exception {
+        Method method = target.getClass().getMethod(methodName, parameterTypes);
+        return method.invoke(target, argument);
+    }
+
+    private static boolean hasMethod(Object target, String methodName, Class<?>... parameterTypes) {
+        try {
+            target.getClass().getMethod(methodName, parameterTypes);
+            return true;
+        } catch (NoSuchMethodException ex) {
+            return false;
+        }
     }
 }
