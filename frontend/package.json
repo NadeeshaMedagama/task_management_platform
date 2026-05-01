@@ -16,7 +16,7 @@
     "react-hot-toast": "^2.4.1",
     "lucide-react": "^1.14.0",
     "date-fns": "^4.1.0",
-    "@headlessui/react": "^2.2.9"
+    "@headlessui/react": "^2.2.10"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.2.1",
