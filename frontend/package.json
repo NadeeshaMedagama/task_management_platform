@@ -9,22 +9,22 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "next": "16.2.4",
+    "next": "16.2.6",
     "react": "^19",
     "react-dom": "^19",
-    "axios": "^1.15.1",
+    "axios": "^1.16.0",
     "react-hot-toast": "^2.4.1",
     "lucide-react": "^1.14.0",
     "date-fns": "^4.1.0",
     "@headlessui/react": "^2.2.10"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.2.1",
+    "@tailwindcss/postcss": "^4.3.0",
     "typescript": "^6",
     "@types/node": "^25",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "tailwindcss": "^4.2.1",
+    "tailwindcss": "^4.3.0",
     "postcss": "^8",
     "autoprefixer": "^10.5.0",
     "eslint": "^10.3.0",
