@@ -12,7 +12,7 @@
     "next": "16.2.7",
     "react": "^19",
     "react-dom": "^19",
-    "axios": "^1.17.0",
+    "axios": "^1.18.0",
     "react-hot-toast": "^2.4.1",
     "lucide-react": "^1.16.0",
     "date-fns": "^4.4.0",
